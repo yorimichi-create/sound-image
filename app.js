@@ -8,6 +8,7 @@ const imageInput = document.getElementById("imageInput");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const micButton = document.getElementById("micButton");
+const volumeDisplay = document.getElementById("volumeDisplay");
 
 // オフスクリーンCanvas
 // 輪郭画像を保存しておくために使用
@@ -564,6 +565,11 @@ function draw() {
 
   // 音量
   const volume = getVolume();
+
+  if (volumeDisplay) {
+    volumeDisplay.textContent =
+    "VOLUME " + Math.round(volume * 100);
+  }
 
 
   // なめらかにする
