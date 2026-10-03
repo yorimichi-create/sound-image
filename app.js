@@ -346,54 +346,42 @@ async function startMicrophone() {
       alert(
         "このブラウザではマイク機能を使用できません。"
       );
-
       return;
     }
 
-
-    // マイク取得
-    microphoneStream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-
-
-    // AudioContext
+    // AudioContextを先に作る
     const AudioContextClass =
       window.AudioContext ||
       window.webkitAudioContext;
-
 
     if (!AudioContextClass) {
       alert(
         "このブラウザでは音声解析を使用できません。"
       );
-
       return;
     }
 
+    audioContext = new AudioContextClass();
 
-    audioContext =
-      new AudioContextClass();
+    // ユーザー操作直後にAudioContextを開始
+    await audioContext.resume();
 
-
-    // AudioContextが停止状態なら再開
-    if (
-      audioContext.state === "suspended"
-    ) {
-      await audioContext.resume();
-    }
-
+    // マイク取得
+    microphoneStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
 
     // Analyser
     analyser =
       audioContext.createAnalyser();
 
-
     analyser.fftSize = 1024;
-
-    analyser.smoothingTimeConstant = 0.8;
-
+    analyser.smoothingTimeConstant = 0.5;
 
     // マイク → Analyser
     microphoneSource =
@@ -401,22 +389,22 @@ async function startMicrophone() {
         microphoneStream
       );
 
-
     microphoneSource.connect(
       analyser
     );
-
 
     micStarted = true;
 
     micButton.textContent =
       "マイクを停止";
 
-
     // アニメーション開始
     if (!animationId) {
       animate();
     }
+
+    console.log("マイク開始");
+    console.log("AudioContext:", audioContext.state);
 
   } catch (error) {
 
@@ -424,6 +412,25 @@ async function startMicrophone() {
       "マイク開始エラー:",
       error
     );
+
+    if (microphoneStream) {
+      microphoneStream
+        .getTracks()
+        .forEach(function (track) {
+          track.stop();
+        });
+    }
+
+    if (audioContext) {
+      audioContext.close().catch(
+        function () {}
+      );
+    }
+
+    microphoneStream = null;
+    microphoneSource = null;
+    analyser = null;
+    audioContext = null;
 
     alert(
       "マイクを使用できませんでした。\n\n" +
