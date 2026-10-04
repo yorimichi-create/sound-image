@@ -752,7 +752,7 @@ function drawModeB(
 
 // ==============================
 // C
-// 波のように広がる
+// 輪郭から外側へ波が広がる
 // ==============================
 
 function drawModeC(
@@ -761,143 +761,184 @@ function drawModeC(
   volume
 ) {
 
-  const scale =
-    1 + volume * 0.22;
+  // Canvasの中だけに描画
+  ctx.save();
 
-  const drawWidth =
-    width * scale;
+  ctx.beginPath();
+  ctx.rect(
+    0,
+    0,
+    width,
+    height
+  );
+  ctx.clip();
 
-  const drawHeight =
-    height * scale;
+  // --------------------------
+  // 元の輪郭
+  // --------------------------
 
-  const drawX =
-    (width - drawWidth) / 2;
+  const baseScale =
+    1 + volume * 0.18;
 
-  const drawY =
-    (height - drawHeight) / 2;
+  const baseWidth =
+    width * baseScale;
 
-  const slices = 120;
+  const baseHeight =
+    height * baseScale;
 
-  const sliceHeight =
-    drawHeight / slices;
+  const baseX =
+    (width - baseWidth) / 2;
 
-  for (
-    let i = 0;
-    i < slices;
-    i++
-  ) {
+  const baseY =
+    (height - baseHeight) / 2;
 
-    const normalized =
-      i / slices;
+  // 元の輪郭を描く
+  ctx.drawImage(
+    edgeCanvas,
+    baseX,
+    baseY,
+    baseWidth,
+    baseHeight
+  );
 
-    // 大きな波
-    const wave =
-      Math.sin(
-        normalized *
-        Math.PI *
-        5 +
-        waveTime
+
+  // --------------------------
+  // 波紋
+  // --------------------------
+
+  if (volume > 0.02) {
+
+    const waveCount = 4;
+
+    for (
+      let i = 0;
+      i < waveCount;
+      i++
+    ) {
+
+      // 波が外側へ進む
+      const phase =
+        (
+          waveTime * 0.7 +
+          i / waveCount
+        ) % 1;
+
+      // 0 → 1
+      const progress =
+        phase;
+
+      // 外側へ広がる大きさ
+      const expansion =
+        progress *
+        (0.35 + volume * 0.35);
+
+      const scale =
+        baseScale +
+        expansion;
+
+      const waveWidth =
+        width * scale;
+
+      const waveHeight =
+        height * scale;
+
+      const waveX =
+        (width - waveWidth) / 2;
+
+      const waveY =
+        (height - waveHeight) / 2;
+
+
+      // 外側に行くほど薄くする
+      const alpha =
+        (1 - progress) *
+        volume *
+        0.65;
+
+
+      if (alpha <= 0) {
+        continue;
+      }
+
+
+      ctx.save();
+
+      ctx.globalAlpha =
+        alpha;
+
+      ctx.globalCompositeOperation =
+        "screen";
+
+      // 少しぼかして波っぽくする
+      ctx.filter =
+        `blur(${1 + progress * 5}px)`;
+
+      ctx.drawImage(
+        edgeCanvas,
+        waveX,
+        waveY,
+        waveWidth,
+        waveHeight
       );
 
-    // 小さな波を重ねる
-    const wave2 =
-      Math.sin(
-        normalized *
-        Math.PI *
-        13 -
-        waveTime * 1.7
-      );
-
-    const offset =
-      (
-        wave * 28 +
-        wave2 * 10
-      ) *
-      volume;
-
-    ctx.drawImage(
-
-      edgeCanvas,
-
-      0,
-      normalized *
-        edgeCanvas.height,
-
-      edgeCanvas.width,
-      sliceHeight /
-        scale,
-
-      drawX + offset,
-      drawY +
-        normalized *
-        drawHeight,
-
-      drawWidth,
-      sliceHeight
-    );
+      ctx.restore();
+    }
   }
 
-  // 波の発光
-  if (volume > 0.05) {
+
+  // --------------------------
+  // 強い音のとき追加の波
+  // --------------------------
+
+  if (volume > 0.35) {
+
+    const strongWave =
+      (
+        waveTime * 0.45
+      ) % 1;
+
+    const scale =
+      baseScale +
+      strongWave *
+      0.8;
+
+    const waveWidth =
+      width * scale;
+
+    const waveHeight =
+      height * scale;
+
+    const waveX =
+      (width - waveWidth) / 2;
+
+    const waveY =
+      (height - waveHeight) / 2;
 
     ctx.save();
 
     ctx.globalAlpha =
-      0.18 +
-      volume * 0.45;
-
-    ctx.filter =
-      `blur(${4 + volume * 16}px)`;
+      (1 - strongWave) *
+      volume *
+      0.35;
 
     ctx.globalCompositeOperation =
       "screen";
 
-    for (
-      let i = 0;
-      i < slices;
-      i++
-    ) {
+    ctx.filter =
+      `blur(${2 + strongWave * 8}px)`;
 
-      const normalized =
-        i / slices;
-
-      const wave =
-        Math.sin(
-          normalized *
-          Math.PI *
-          5 +
-          waveTime
-        );
-
-      const offset =
-        wave *
-        volume *
-        28;
-
-      ctx.drawImage(
-
-        edgeCanvas,
-
-        0,
-        normalized *
-          edgeCanvas.height,
-
-        edgeCanvas.width,
-        sliceHeight /
-          scale,
-
-        drawX + offset,
-        drawY +
-          normalized *
-          drawHeight,
-
-        drawWidth,
-        sliceHeight
-      );
-    }
+    ctx.drawImage(
+      edgeCanvas,
+      waveX,
+      waveY,
+      waveWidth,
+      waveHeight
+    );
 
     ctx.restore();
   }
+
+  ctx.restore();
 }
 
 
