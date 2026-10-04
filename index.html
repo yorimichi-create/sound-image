@@ -9,15 +9,25 @@
 
 <body>
   <main>
-    <h1>Sound Image</h1>
+    <h1>wAve</h1>
 
     <input id="imageInput" type="file" accept="image/*">
 
-    <button id="micButton">
-      マイクを開始
-    </button>
-    <div id="volumeDisplay">VOLUME 0</div>
-    <div class="mode-tabs">
+    <div class="audio-input-area">
+
+      <input id="audioInput" type="file" accept="audio/*,video/*">
+
+      <div id="mediaName">
+        音楽または動画を選択してください
+      </div>
+
+    </div>
+
+<button id="micButton">
+  マイクを開始
+</button>
+      <div id="volumeDisplay">VOLUME 0</div>
+      <div class="mode-tabs">
       <button class="mode-tab active" data-mode="A">A：膨張</button>
       <button class="mode-tab" data-mode="B">B：ギザギザ</button>
       <button class="mode-tab" data-mode="C">C：波</button>

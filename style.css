@@ -656,3 +656,45 @@ main::after {
     font-size: 10px;
   }
 }
+
+/* ==============================
+   AUDIO / VIDEO INPUT
+============================== */
+
+.audio-input-area {
+  margin-top: 20px;
+}
+
+#audioInput {
+  display: block;
+  width: 100%;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#audioInput::file-selector-button {
+  margin-right: 20px;
+  padding: 14px 22px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+#audioInput::file-selector-button:hover {
+  color: var(--surface);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#mediaName {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}

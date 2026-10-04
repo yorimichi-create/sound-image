@@ -7,6 +7,18 @@ const imageInput = document.getElementById("imageInput");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const micButton = document.getElementById("micButton");
+const audioInput =
+  document.getElementById("audioInput");
+
+const mediaName =
+  document.getElementById("mediaName");
+
+let mediaElement = null;
+let mediaSource = null;
+let mediaObjectUrl = null;
+
+let audioPlaying = false;
+
 const volumeDisplay =
   document.getElementById("volumeDisplay");
 
@@ -330,6 +342,153 @@ function getBrightness(
   ) / 3;
 }
 
+
+// ==============================
+// 音楽・動画ファイル
+// ==============================
+
+audioInput.addEventListener(
+  "change",
+  function (event) {
+
+    const file =
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    // 前のファイルを解除
+    if (mediaElement) {
+
+      mediaElement.pause();
+
+      mediaElement.src = "";
+
+      mediaElement = null;
+    }
+
+    if (mediaSource) {
+
+      try {
+        mediaSource.disconnect();
+      } catch (error) {}
+      
+      mediaSource = null;
+    }
+
+    if (mediaObjectUrl) {
+
+      URL.revokeObjectURL(
+        mediaObjectUrl
+      );
+    }
+
+    // ファイルURL
+    mediaObjectUrl =
+      URL.createObjectURL(file);
+
+    // audio / video判定
+    if (file.type.startsWith("video/")) {
+
+      mediaElement =
+        document.createElement("video");
+
+    } else {
+
+      mediaElement =
+        document.createElement("audio");
+    }
+
+    mediaElement.src =
+      mediaObjectUrl;
+
+    mediaElement.controls = true;
+
+    mediaElement.preload = "auto";
+
+    // 音声解析用
+    mediaElement.crossOrigin =
+      "anonymous";
+
+    // 画面に表示
+    mediaElement.style.display =
+      "block";
+
+    mediaElement.style.width =
+      "100%";
+
+    mediaElement.style.marginTop =
+      "15px";
+
+    mediaElement.style.border =
+      "1px solid var(--ink)";
+
+    // 以前のメディアを削除
+    const oldMedia =
+      document.getElementById(
+        "mediaPlayer"
+      );
+
+    if (oldMedia) {
+      oldMedia.remove();
+    }
+
+    mediaElement.id =
+      "mediaPlayer";
+
+    mediaName.textContent =
+      file.name;
+
+    mediaName.insertAdjacentElement(
+      "afterend",
+      mediaElement
+    );
+
+    // 再生開始時
+    mediaElement.addEventListener(
+      "play",
+      async function () {
+
+        try {
+
+          await startMediaAudio();
+
+          audioPlaying = true;
+
+          if (!animationId) {
+            animate();
+          }
+
+        } catch (error) {
+
+          console.error(
+            "メディア音声解析エラー:",
+            error
+          );
+        }
+      }
+    );
+
+    // 停止
+    mediaElement.addEventListener(
+      "pause",
+      function () {
+
+        audioPlaying = false;
+      }
+    );
+
+    // 終了
+    mediaElement.addEventListener(
+      "ended",
+      function () {
+
+        audioPlaying = false;
+      }
+    );
+  }
+);
 
 // ==============================
 // マイクボタン
