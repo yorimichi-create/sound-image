@@ -752,12 +752,7 @@ function drawModeB(
 
 // ==============================
 // C
-// 輪郭から外側へ波が広がる
-// ==============================
-
-// ==============================
-// C
-// 輪郭から外側へ波が広がる
+// 優しく外側へ広がる波
 // ==============================
 
 function drawModeC(
@@ -766,9 +761,9 @@ function drawModeC(
   volume
 ) {
 
-  // Canvasの外へ出ない
   ctx.save();
 
+  // Canvasの中だけに描画
   ctx.beginPath();
 
   ctx.rect(
@@ -782,19 +777,17 @@ function drawModeC(
 
 
   // ==========================
-  // 基本サイズ
+  // 元の輪郭
   // ==========================
 
   const baseScale =
-    1 + volume * 0.18;
-
+    1 + volume * 0.12;
 
   const baseWidth =
     width * baseScale;
 
   const baseHeight =
     height * baseScale;
-
 
   const baseX =
     (width - baseWidth) / 2;
@@ -803,18 +796,15 @@ function drawModeC(
     (height - baseHeight) / 2;
 
 
-  // ==========================
-  // 元の輪郭
-  // ==========================
-
+  // 元の輪郭は普通に表示
   ctx.save();
 
   ctx.globalAlpha = 1;
 
-  ctx.filter = "none";
-
   ctx.globalCompositeOperation =
     "source-over";
+
+  ctx.filter = "none";
 
   ctx.drawImage(
     edgeCanvas,
@@ -831,9 +821,9 @@ function drawModeC(
   // 波
   // ==========================
 
-  if (volume > 0.02) {
+  if (volume > 0.015) {
 
-    const waveCount = 5;
+    const waveCount = 7;
 
     for (
       let i = 0;
@@ -841,20 +831,27 @@ function drawModeC(
       i++
     ) {
 
-      // 波が外へ進む
-      const progress =
+      // それぞれの波が少しずつ時間差で出る
+      let progress =
         (
-          waveTime * 0.55 +
+          waveTime * 0.22 +
           i / waveCount
         ) % 1;
 
 
-      // 外側への広がり
+      // 最初はゆっくり、
+      // 中盤から自然に広がる
+      const eased =
+        progress * progress *
+        (3 - 2 * progress);
+
+
+      // Canvas全体へ向かって広がる
       const expansion =
-        progress *
+        eased *
         (
-          0.18 +
-          volume * 0.65
+          0.15 +
+          volume * 1.15
         );
 
 
@@ -877,17 +874,41 @@ function drawModeC(
         (height - waveHeight) / 2;
 
 
-      // 外側に行くほど薄くする
+      // --------------------------
+      // 波の透明度
+      // --------------------------
+
+      // 出始め → 少し見える
+      // 中盤 → 一番見える
+      // 外側 → ゆっくり消える
+
+      const fadeIn =
+        Math.min(
+          1,
+          progress * 8
+        );
+
+      const fadeOut =
+        1 - Math.pow(
+          progress,
+          2.2
+        );
+
       const alpha =
-        (1 - progress) *
+        fadeIn *
+        fadeOut *
         volume *
-        0.65;
+        0.42;
 
 
       if (alpha <= 0) {
         continue;
       }
 
+
+      // --------------------------
+      // 波を描く
+      // --------------------------
 
       ctx.save();
 
@@ -897,9 +918,8 @@ function drawModeC(
       ctx.globalCompositeOperation =
         "screen";
 
-      ctx.filter =
-        `blur(${1 + progress * 4}px)`;
-
+      // ブラーは使わない
+      ctx.filter = "none";
 
       ctx.drawImage(
         edgeCanvas,
@@ -908,7 +928,6 @@ function drawModeC(
         waveWidth,
         waveHeight
       );
-
 
       ctx.restore();
     }
