@@ -1,23 +1,25 @@
 // ==============================
-// Sound Image
+// wAve
 // app.js
 // ==============================
 
-const imageInput = document.getElementById("imageInput");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const micButton = document.getElementById("micButton");
+const imageInput =
+  document.getElementById("imageInput");
+
+const canvas =
+  document.getElementById("canvas");
+
+const ctx =
+  canvas.getContext("2d");
+
+const micButton =
+  document.getElementById("micButton");
+
 const audioInput =
   document.getElementById("audioInput");
 
 const mediaName =
   document.getElementById("mediaName");
-
-let mediaElement = null;
-let mediaSource = null;
-let mediaObjectUrl = null;
-
-let audioPlaying = false;
 
 const volumeDisplay =
   document.getElementById("volumeDisplay");
@@ -25,7 +27,6 @@ const volumeDisplay =
 const modeTabs =
   document.querySelectorAll(".mode-tab");
 
-let currentMode = "A";
 
 // ==============================
 // Canvas
@@ -37,10 +38,19 @@ const edgeCanvas =
 const edgeCtx =
   edgeCanvas.getContext("2d");
 
-let image = new Image();
+let image =
+  new Image();
 
 let imageLoaded = false;
 let edgeReady = false;
+
+
+// ==============================
+// モード
+// ==============================
+
+let currentMode = "A";
+
 
 // ==============================
 // 音声
@@ -48,15 +58,24 @@ let edgeReady = false;
 
 let audioContext = null;
 let analyser = null;
+
 let microphoneSource = null;
 let microphoneStream = null;
+
+let mediaElement = null;
+let mediaSource = null;
+let mediaObjectUrl = null;
 
 let micStarted = false;
 let animationId = null;
 
 let currentVolume = 0;
 
-// 波の時間
+
+// ==============================
+// 波
+// ==============================
+
 let waveTime = 0;
 
 
@@ -66,17 +85,26 @@ let waveTime = 0;
 
 modeTabs.forEach(function (tab) {
 
-  tab.addEventListener("click", function () {
+  tab.addEventListener(
+    "click",
+    function () {
 
-    currentMode =
-      tab.dataset.mode;
+      currentMode =
+        tab.dataset.mode;
 
-    modeTabs.forEach(function (item) {
-      item.classList.remove("active");
-    });
+      modeTabs.forEach(
+        function (item) {
 
-    tab.classList.add("active");
-  });
+          item.classList.remove(
+            "active"
+          );
+
+        }
+      );
+
+      tab.classList.add("active");
+    }
+  );
 
 });
 
@@ -99,65 +127,77 @@ imageInput.addEventListener(
     const url =
       URL.createObjectURL(file);
 
-    image.onload = function () {
+    image.onload =
+      function () {
 
-      URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
 
-      const maxSize = 1200;
+        const maxSize = 1200;
 
-      let width =
-        image.naturalWidth;
+        let width =
+          image.naturalWidth;
 
-      let height =
-        image.naturalHeight;
+        let height =
+          image.naturalHeight;
 
-      if (!width || !height) {
-        return;
-      }
+        if (!width || !height) {
+          return;
+        }
 
-      if (
-        width > maxSize ||
-        height > maxSize
-      ) {
+        if (
+          width > maxSize ||
+          height > maxSize
+        ) {
 
-        const scale =
-          Math.min(
-            maxSize / width,
-            maxSize / height
-          );
+          const scale =
+            Math.min(
+              maxSize / width,
+              maxSize / height
+            );
 
-        width =
-          Math.floor(width * scale);
+          width =
+            Math.floor(
+              width * scale
+            );
 
-        height =
-          Math.floor(height * scale);
-      }
+          height =
+            Math.floor(
+              height * scale
+            );
+        }
 
-      canvas.width = width;
-      canvas.height = height;
+        canvas.width =
+          width;
 
-      edgeCanvas.width = width;
-      edgeCanvas.height = height;
+        canvas.height =
+          height;
 
-      createEdgeImage(
-        width,
-        height
-      );
+        edgeCanvas.width =
+          width;
 
-      imageLoaded = true;
-      edgeReady = true;
+        edgeCanvas.height =
+          height;
 
-      draw();
-    };
+        createEdgeImage(
+          width,
+          height
+        );
 
-    image.onerror = function () {
+        imageLoaded = true;
+        edgeReady = true;
 
-      URL.revokeObjectURL(url);
+        draw();
+      };
 
-      alert(
-        "画像を読み込めませんでした。"
-      );
-    };
+    image.onerror =
+      function () {
+
+        URL.revokeObjectURL(url);
+
+        alert(
+          "画像を読み込めませんでした。"
+        );
+      };
 
     image.src = url;
   }
@@ -176,8 +216,11 @@ function createEdgeImage(
   const tempCanvas =
     document.createElement("canvas");
 
-  tempCanvas.width = width;
-  tempCanvas.height = height;
+  tempCanvas.width =
+    width;
+
+  tempCanvas.height =
+    height;
 
   const tempCtx =
     tempCanvas.getContext("2d");
@@ -204,6 +247,8 @@ function createEdgeImage(
 
   } catch (error) {
 
+    console.error(error);
+
     alert(
       "画像を処理できませんでした。"
     );
@@ -211,7 +256,8 @@ function createEdgeImage(
     return;
   }
 
-  const src = source.data;
+  const src =
+    source.data;
 
   const output =
     edgeCtx.createImageData(
@@ -219,7 +265,9 @@ function createEdgeImage(
       height
     );
 
-  const dst = output.data;
+  const dst =
+    output.data;
+
 
   // ==========================
   // エッジ検出
@@ -252,6 +300,7 @@ function createEdgeImage(
       const bottomIndex =
         ((y + 1) * width + x) * 4;
 
+
       const left =
         getBrightness(
           src,
@@ -276,11 +325,17 @@ function createEdgeImage(
           bottomIndex
         );
 
+
       const horizontal =
-        Math.abs(left - right);
+        Math.abs(
+          left - right
+        );
 
       const vertical =
-        Math.abs(top - bottom);
+        Math.abs(
+          top - bottom
+        );
+
 
       const difference =
         Math.sqrt(
@@ -288,9 +343,11 @@ function createEdgeImage(
           vertical * vertical
         );
 
+
       const threshold = 30;
 
       let value = 0;
+
 
       if (
         difference >
@@ -304,6 +361,8 @@ function createEdgeImage(
           );
       }
 
+
+      // 白い線 + 背景は透明
       dst[currentIndex] =
         255;
 
@@ -317,6 +376,7 @@ function createEdgeImage(
         value;
     }
   }
+
 
   edgeCtx.putImageData(
     output,
@@ -358,60 +418,102 @@ audioInput.addEventListener(
       return;
     }
 
-    // 前のファイルを解除
+
+    // --------------------------
+    // 前のメディアを停止
+    // --------------------------
+
     if (mediaElement) {
 
       mediaElement.pause();
 
       mediaElement.src = "";
 
+      mediaElement.remove();
+
       mediaElement = null;
     }
+
+
+    // --------------------------
+    // 前の接続を解除
+    // --------------------------
 
     if (mediaSource) {
 
       try {
         mediaSource.disconnect();
-      } catch (error) {}
-      
+      } catch (error) {
+        console.warn(error);
+      }
+
       mediaSource = null;
     }
+
+
+    // --------------------------
+    // URLを解除
+    // --------------------------
 
     if (mediaObjectUrl) {
 
       URL.revokeObjectURL(
         mediaObjectUrl
       );
+
+      mediaObjectUrl = null;
     }
 
+
+    // --------------------------
     // ファイルURL
+    // --------------------------
+
     mediaObjectUrl =
       URL.createObjectURL(file);
 
-    // audio / video判定
-    if (file.type.startsWith("video/")) {
+
+    // --------------------------
+    // audio / video
+    // --------------------------
+
+    if (
+      file.type.startsWith(
+        "video/"
+      )
+    ) {
 
       mediaElement =
-        document.createElement("video");
+        document.createElement(
+          "video"
+        );
 
     } else {
 
       mediaElement =
-        document.createElement("audio");
+        document.createElement(
+          "audio"
+        );
     }
+
+
+    mediaElement.id =
+      "mediaPlayer";
 
     mediaElement.src =
       mediaObjectUrl;
 
-    mediaElement.controls = true;
+    mediaElement.controls =
+      true;
 
-    mediaElement.preload = "auto";
+    mediaElement.preload =
+      "auto";
 
-    // 音声解析用
-    mediaElement.crossOrigin =
-      "anonymous";
 
-    // 画面に表示
+    // --------------------------
+    // 見た目
+    // --------------------------
+
     mediaElement.style.display =
       "block";
 
@@ -424,37 +526,33 @@ audioInput.addEventListener(
     mediaElement.style.border =
       "1px solid var(--ink)";
 
-    // 以前のメディアを削除
-    const oldMedia =
-      document.getElementById(
-        "mediaPlayer"
-      );
-
-    if (oldMedia) {
-      oldMedia.remove();
-    }
-
-    mediaElement.id =
-      "mediaPlayer";
 
     mediaName.textContent =
       file.name;
+
 
     mediaName.insertAdjacentElement(
       "afterend",
       mediaElement
     );
 
-    // 再生開始時
+
+    // ==========================
+    // 再生
+    // ==========================
+
     mediaElement.addEventListener(
       "play",
       async function () {
 
         try {
 
-          await startMediaAudio();
+          // マイクが動いていたら停止
+          if (micStarted) {
+            stopMicrophone();
+          }
 
-          audioPlaying = true;
+          await startMediaAudio();
 
           if (!animationId) {
             animate();
@@ -470,25 +568,107 @@ audioInput.addEventListener(
       }
     );
 
+
+    // ==========================
     // 停止
+    // ==========================
+
     mediaElement.addEventListener(
       "pause",
       function () {
 
-        audioPlaying = false;
+        currentVolume *= 0.85;
       }
     );
 
+
+    // ==========================
     // 終了
+    // ==========================
+
     mediaElement.addEventListener(
       "ended",
       function () {
 
-        audioPlaying = false;
+        currentVolume = 0;
       }
     );
   }
 );
+
+
+// ==============================
+// 音楽・動画 → Analyser
+// ==============================
+
+async function startMediaAudio() {
+
+  const AudioContextClass =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+
+  if (!AudioContextClass) {
+
+    alert(
+      "このブラウザでは音声解析を使用できません。"
+    );
+
+    return;
+  }
+
+
+  // --------------------------
+  // AudioContext
+  // --------------------------
+
+  if (!audioContext) {
+
+    audioContext =
+      new AudioContextClass();
+
+    analyser =
+      audioContext.createAnalyser();
+
+    analyser.fftSize =
+      1024;
+
+    analyser.smoothingTimeConstant =
+      0.65;
+  }
+
+
+  if (
+    audioContext.state ===
+    "suspended"
+  ) {
+
+    await audioContext.resume();
+  }
+
+
+  // --------------------------
+  // まだ接続していなければ接続
+  // --------------------------
+
+  if (!mediaSource) {
+
+    mediaSource =
+      audioContext.createMediaElementSource(
+        mediaElement
+      );
+
+    mediaSource.connect(
+      analyser
+    );
+
+    // 普通に音を聞けるようにする
+    analyser.connect(
+      audioContext.destination
+    );
+  }
+}
+
 
 // ==============================
 // マイクボタン
@@ -518,6 +698,10 @@ async function startMicrophone() {
 
   try {
 
+    // --------------------------
+    // 対応確認
+    // --------------------------
+
     if (
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
@@ -530,9 +714,11 @@ async function startMicrophone() {
       return;
     }
 
+
     const AudioContextClass =
       window.AudioContext ||
       window.webkitAudioContext;
+
 
     if (!AudioContextClass) {
 
@@ -543,10 +729,42 @@ async function startMicrophone() {
       return;
     }
 
+
+    // --------------------------
+    // 音楽・動画が再生中なら停止
+    // --------------------------
+
+    if (mediaElement) {
+      mediaElement.pause();
+    }
+
+
+    // --------------------------
+    // AudioContext
+    // --------------------------
+
+    if (audioContext) {
+
+      try {
+        await audioContext.close();
+      } catch (error) {
+        console.warn(error);
+      }
+
+      audioContext = null;
+      analyser = null;
+    }
+
+
     audioContext =
       new AudioContextClass();
 
     await audioContext.resume();
+
+
+    // --------------------------
+    // マイク
+    // --------------------------
 
     microphoneStream =
       await navigator.mediaDevices.getUserMedia({
@@ -557,13 +775,24 @@ async function startMicrophone() {
         }
       });
 
+
+    // --------------------------
+    // Analyser
+    // --------------------------
+
     analyser =
       audioContext.createAnalyser();
 
-    analyser.fftSize = 1024;
+    analyser.fftSize =
+      1024;
 
     analyser.smoothingTimeConstant =
       0.5;
+
+
+    // --------------------------
+    // マイク → Analyser
+    // --------------------------
 
     microphoneSource =
       audioContext.createMediaStreamSource(
@@ -574,10 +803,12 @@ async function startMicrophone() {
       analyser
     );
 
+
     micStarted = true;
 
     micButton.textContent =
       "マイクを停止";
+
 
     if (!animationId) {
       animate();
@@ -607,24 +838,33 @@ function stopMicrophone() {
 
     try {
       microphoneSource.disconnect();
-    } catch (error) {}
+    } catch (error) {
+      console.warn(error);
+    }
   }
+
 
   if (microphoneStream) {
 
     microphoneStream
       .getTracks()
-      .forEach(function (track) {
-        track.stop();
-      });
+      .forEach(
+        function (track) {
+          track.stop();
+        }
+      );
   }
+
 
   if (audioContext) {
 
     audioContext
       .close()
-      .catch(function () {});
+      .catch(
+        function () {}
+      );
   }
+
 
   microphoneSource = null;
   microphoneStream = null;
@@ -650,16 +890,20 @@ function getVolume() {
     return 0;
   }
 
+
   const data =
     new Uint8Array(
       analyser.frequencyBinCount
     );
 
+
   analyser.getByteFrequencyData(
     data
   );
 
+
   let sum = 0;
+
 
   for (
     let i = 0;
@@ -670,16 +914,15 @@ function getVolume() {
     sum += data[i];
   }
 
+
   const average =
     sum / data.length;
 
-  const volume =
-    Math.min(
-      1,
-      average / 8
-    );
 
-  return volume;
+  return Math.min(
+    1,
+    average / 8
+  );
 }
 
 
@@ -696,35 +939,53 @@ function draw() {
     return;
   }
 
+
   const width =
     canvas.width;
 
   const height =
     canvas.height;
 
+
   const volume =
     getVolume();
+
+
+  // --------------------------
+  // VOLUME表示
+  // --------------------------
 
   if (volumeDisplay) {
 
     volumeDisplay.textContent =
       "VOLUME " +
-      Math.round(volume * 100);
+      Math.round(
+        volume * 100
+      );
   }
 
+
+  // --------------------------
   // 音量を滑らかにする
+  // --------------------------
+
   currentVolume =
     currentVolume * 0.5 +
     volume * 0.5;
 
-  // 波を進める
+
+  // --------------------------
+  // 波の時間
+  // --------------------------
+
   waveTime +=
     0.04 +
     currentVolume * 0.15;
 
-  // ==========================
+
+  // --------------------------
   // 背景
-  // ==========================
+  // --------------------------
 
   ctx.clearRect(
     0,
@@ -733,8 +994,10 @@ function draw() {
     height
   );
 
+
   ctx.fillStyle =
     "#050505";
+
 
   ctx.fillRect(
     0,
@@ -743,9 +1006,10 @@ function draw() {
     height
   );
 
-  // ==========================
+
+  // --------------------------
   // モード
-  // ==========================
+  // --------------------------
 
   if (currentMode === "A") {
 
@@ -755,7 +1019,9 @@ function draw() {
       currentVolume
     );
 
-  } else if (currentMode === "B") {
+  } else if (
+    currentMode === "B"
+  ) {
 
     drawModeB(
       width,
@@ -763,7 +1029,9 @@ function draw() {
       currentVolume
     );
 
-  } else if (currentMode === "C") {
+  } else if (
+    currentMode === "C"
+  ) {
 
     drawModeC(
       width,
@@ -788,17 +1056,20 @@ function drawModeA(
   const scale =
     1 + volume * 0.28;
 
+
   const drawWidth =
     width * scale;
 
   const drawHeight =
     height * scale;
 
+
   const drawX =
     (width - drawWidth) / 2;
 
   const drawY =
     (height - drawHeight) / 2;
+
 
   drawGlow(
     drawX,
@@ -807,6 +1078,7 @@ function drawModeA(
     drawHeight,
     volume
   );
+
 
   ctx.drawImage(
     edgeCanvas,
@@ -820,7 +1092,7 @@ function drawModeA(
 
 // ==============================
 // B
-// ギザギザに変形
+// ギザギザ
 // ==============================
 
 function drawModeB(
@@ -832,11 +1104,13 @@ function drawModeB(
   const scale =
     1 + volume * 0.18;
 
+
   const drawWidth =
     width * scale;
 
   const drawHeight =
     height * scale;
+
 
   const drawX =
     (width - drawWidth) / 2;
@@ -844,10 +1118,13 @@ function drawModeB(
   const drawY =
     (height - drawHeight) / 2;
 
+
   const slices = 100;
+
 
   const sliceHeight =
     drawHeight / slices;
+
 
   for (
     let i = 0;
@@ -858,7 +1135,7 @@ function drawModeB(
     const normalized =
       i / slices;
 
-    // ギザギザ
+
     const zigzag =
       Math.sin(
         normalized *
@@ -866,13 +1143,13 @@ function drawModeB(
         24
       );
 
-    // 音量で強さを変える
+
     const amount =
       zigzag *
       volume *
       35;
 
-    // 少しランダム感を追加
+
     const jitter =
       Math.sin(
         i * 17.3 +
@@ -881,28 +1158,33 @@ function drawModeB(
       volume *
       8;
 
+
     const offset =
       amount +
       jitter;
+
 
     ctx.drawImage(
 
       edgeCanvas,
 
       0,
+
       normalized *
-        edgeCanvas.height,
+      edgeCanvas.height,
 
       edgeCanvas.width,
-      sliceHeight /
-        scale,
+
+      sliceHeight / scale,
 
       drawX + offset,
+
       drawY +
-        normalized *
-        drawHeight,
+      normalized *
+      drawHeight,
 
       drawWidth,
+
       sliceHeight
     );
   }
@@ -922,7 +1204,8 @@ function drawModeC(
 
   ctx.save();
 
-  // Canvasの中だけに描画
+
+  // Canvas内だけ
   ctx.beginPath();
 
   ctx.rect(
@@ -942,11 +1225,13 @@ function drawModeC(
   const baseScale =
     1 + volume * 0.12;
 
+
   const baseWidth =
     width * baseScale;
 
   const baseHeight =
     height * baseScale;
+
 
   const baseX =
     (width - baseWidth) / 2;
@@ -955,16 +1240,6 @@ function drawModeC(
     (height - baseHeight) / 2;
 
 
-  // 元の輪郭は普通に表示
-  ctx.save();
-
-  ctx.globalAlpha = 1;
-
-  ctx.globalCompositeOperation =
-    "source-over";
-
-  ctx.filter = "none";
-
   ctx.drawImage(
     edgeCanvas,
     baseX,
@@ -972,8 +1247,6 @@ function drawModeC(
     baseWidth,
     baseHeight
   );
-
-  ctx.restore();
 
 
   // ==========================
@@ -984,28 +1257,28 @@ function drawModeC(
 
     const waveCount = 7;
 
+
     for (
       let i = 0;
       i < waveCount;
       i++
     ) {
 
-      // それぞれの波が少しずつ時間差で出る
-      let progress =
+      const progress =
         (
           waveTime * 0.22 +
           i / waveCount
         ) % 1;
 
 
-      // 最初はゆっくり、
-      // 中盤から自然に広がる
+      // なめらかな加速
       const eased =
-        progress * progress *
+        progress *
+        progress *
         (3 - 2 * progress);
 
 
-      // Canvas全体へ向かって広がる
+      // Canvas全体へ広がる
       const expansion =
         eased *
         (
@@ -1033,25 +1306,21 @@ function drawModeC(
         (height - waveHeight) / 2;
 
 
-      // --------------------------
-      // 波の透明度
-      // --------------------------
-
-      // 出始め → 少し見える
-      // 中盤 → 一番見える
-      // 外側 → ゆっくり消える
-
+      // 徐々に消える
       const fadeIn =
         Math.min(
           1,
           progress * 8
         );
 
+
       const fadeOut =
-        1 - Math.pow(
+        1 -
+        Math.pow(
           progress,
           2.2
         );
+
 
       const alpha =
         fadeIn *
@@ -1065,20 +1334,20 @@ function drawModeC(
       }
 
 
-      // --------------------------
-      // 波を描く
-      // --------------------------
-
       ctx.save();
+
 
       ctx.globalAlpha =
         alpha;
 
+
       ctx.globalCompositeOperation =
         "screen";
 
-      // ブラーは使わない
-      ctx.filter = "none";
+
+      ctx.filter =
+        "none";
+
 
       ctx.drawImage(
         edgeCanvas,
@@ -1087,6 +1356,7 @@ function drawModeC(
         waveWidth,
         waveHeight
       );
+
 
       ctx.restore();
     }
@@ -1113,17 +1383,22 @@ function drawGlow(
     return;
   }
 
+
   ctx.save();
+
 
   ctx.globalCompositeOperation =
     "screen";
+
 
   ctx.globalAlpha =
     0.25 +
     volume * 0.55;
 
+
   ctx.filter =
     `blur(${3 + volume * 18}px)`;
+
 
   ctx.drawImage(
     edgeCanvas,
@@ -1132,6 +1407,7 @@ function drawGlow(
     width,
     height
   );
+
 
   ctx.restore();
 }
@@ -1159,8 +1435,10 @@ function animate() {
 canvas.width = 800;
 canvas.height = 500;
 
+
 ctx.fillStyle =
   "#050505";
+
 
 ctx.fillRect(
   0,
