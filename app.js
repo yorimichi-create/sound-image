@@ -293,16 +293,16 @@ function createEdgeImage(
       }
 
       dst[currentIndex] =
-        value;
+        255;
 
       dst[currentIndex + 1] =
-        value;
+        255;
 
       dst[currentIndex + 2] =
-        value;
+        255;
 
       dst[currentIndex + 3] =
-        255;
+        value;
     }
   }
 
@@ -755,30 +755,39 @@ function drawModeB(
 // 輪郭から外側へ波が広がる
 // ==============================
 
+// ==============================
+// C
+// 輪郭から外側へ波が広がる
+// ==============================
+
 function drawModeC(
   width,
   height,
   volume
 ) {
 
-  // Canvasの中だけに描画
+  // Canvasの外へ出ない
   ctx.save();
 
   ctx.beginPath();
+
   ctx.rect(
     0,
     0,
     width,
     height
   );
+
   ctx.clip();
 
-  // --------------------------
-  // 元の輪郭
-  // --------------------------
+
+  // ==========================
+  // 基本サイズ
+  // ==========================
 
   const baseScale =
     1 + volume * 0.18;
+
 
   const baseWidth =
     width * baseScale;
@@ -786,13 +795,27 @@ function drawModeC(
   const baseHeight =
     height * baseScale;
 
+
   const baseX =
     (width - baseWidth) / 2;
 
   const baseY =
     (height - baseHeight) / 2;
 
-  // 元の輪郭を描く
+
+  // ==========================
+  // 元の輪郭
+  // ==========================
+
+  ctx.save();
+
+  ctx.globalAlpha = 1;
+
+  ctx.filter = "none";
+
+  ctx.globalCompositeOperation =
+    "source-over";
+
   ctx.drawImage(
     edgeCanvas,
     baseX,
@@ -801,14 +824,16 @@ function drawModeC(
     baseHeight
   );
 
+  ctx.restore();
 
-  // --------------------------
-  // 波紋
-  // --------------------------
+
+  // ==========================
+  // 波
+  // ==========================
 
   if (volume > 0.02) {
 
-    const waveCount = 4;
+    const waveCount = 5;
 
     for (
       let i = 0;
@@ -816,31 +841,34 @@ function drawModeC(
       i++
     ) {
 
-      // 波が外側へ進む
-      const phase =
+      // 波が外へ進む
+      const progress =
         (
-          waveTime * 0.7 +
+          waveTime * 0.55 +
           i / waveCount
         ) % 1;
 
-      // 0 → 1
-      const progress =
-        phase;
 
-      // 外側へ広がる大きさ
+      // 外側への広がり
       const expansion =
         progress *
-        (0.35 + volume * 0.35);
+        (
+          0.18 +
+          volume * 0.65
+        );
+
 
       const scale =
         baseScale +
         expansion;
+
 
       const waveWidth =
         width * scale;
 
       const waveHeight =
         height * scale;
+
 
       const waveX =
         (width - waveWidth) / 2;
@@ -869,9 +897,9 @@ function drawModeC(
       ctx.globalCompositeOperation =
         "screen";
 
-      // 少しぼかして波っぽくする
       ctx.filter =
-        `blur(${1 + progress * 5}px)`;
+        `blur(${1 + progress * 4}px)`;
+
 
       ctx.drawImage(
         edgeCanvas,
@@ -881,62 +909,11 @@ function drawModeC(
         waveHeight
       );
 
+
       ctx.restore();
     }
   }
 
-
-  // --------------------------
-  // 強い音のとき追加の波
-  // --------------------------
-
-  if (volume > 0.35) {
-
-    const strongWave =
-      (
-        waveTime * 0.45
-      ) % 1;
-
-    const scale =
-      baseScale +
-      strongWave *
-      0.8;
-
-    const waveWidth =
-      width * scale;
-
-    const waveHeight =
-      height * scale;
-
-    const waveX =
-      (width - waveWidth) / 2;
-
-    const waveY =
-      (height - waveHeight) / 2;
-
-    ctx.save();
-
-    ctx.globalAlpha =
-      (1 - strongWave) *
-      volume *
-      0.35;
-
-    ctx.globalCompositeOperation =
-      "screen";
-
-    ctx.filter =
-      `blur(${2 + strongWave * 8}px)`;
-
-    ctx.drawImage(
-      edgeCanvas,
-      waveX,
-      waveY,
-      waveWidth,
-      waveHeight
-    );
-
-    ctx.restore();
-  }
 
   ctx.restore();
 }
