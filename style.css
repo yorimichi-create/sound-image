@@ -597,3 +597,62 @@ main::after {
     transition: none !important;
   }
 }
+
+/* ==============================
+   MODE TABS
+============================== */
+
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 35px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.mode-tab {
+  min-width: 150px;
+  margin-top: 0;
+  border: 1px solid var(--ink);
+  border-bottom: none;
+  background: transparent;
+  color: var(--ink);
+  justify-content: center;
+}
+
+.mode-tab::before,
+.mode-tab::after {
+  display: none;
+}
+
+.mode-tab:hover {
+  color: var(--surface);
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: none;
+}
+
+.mode-tab.active {
+  color: var(--surface);
+  background: var(--ink);
+}
+
+#volumeDisplay {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+@media (max-width: 700px) {
+  .mode-tabs {
+    width: 100%;
+  }
+
+  .mode-tab {
+    min-width: 0;
+    flex: 1;
+    padding: 14px 8px;
+    font-size: 10px;
+  }
+}

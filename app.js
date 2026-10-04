@@ -9,6 +9,29 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const micButton = document.getElementById("micButton");
 const volumeDisplay = document.getElementById("volumeDisplay");
+const modeTabs = document.querySelectorAll(".mode-tab");
+
+let currentMode = "A";
+
+// ==============================
+// 表現モード切り替え
+// ==============================
+
+modeTabs.forEach(function (tab) {
+
+  tab.addEventListener("click", function () {
+
+    currentMode =
+      tab.dataset.mode;
+
+    modeTabs.forEach(function (item) {
+      item.classList.remove("active");
+    });
+
+    tab.classList.add("active");
+  });
+
+});
 
 // オフスクリーンCanvas
 // 輪郭画像を保存しておくために使用
@@ -540,30 +563,50 @@ function draw() {
     return;
   }
 
-
   const width = canvas.width;
   const height = canvas.height;
 
-
+  // ==========================
   // 音量
+  // ==========================
+
   const volume = getVolume();
 
   if (volumeDisplay) {
     volumeDisplay.textContent =
-    "VOLUME " + Math.round(volume * 100);
+      "VOLUME " +
+      Math.round(volume * 100);
   }
-
 
   // なめらかにする
   currentVolume =
     currentVolume * 0.5 +
     volume * 0.5;
 
+  // ==========================
+  // モードごとの強さ
+  // ==========================
 
-  // 音量に応じた拡大
-  const scale =
-    1 + currentVolume * 0.25;
+  let scale = 1;
 
+  if (currentMode === "A") {
+
+    // A：そのまま膨張
+    scale =
+      1 + currentVolume * 0.25;
+
+  } else if (currentMode === "B") {
+
+    // B：ギザギザ
+    scale =
+      1 + currentVolume * 0.16;
+
+  } else if (currentMode === "C") {
+
+    // C：波
+    scale =
+      1 + currentVolume * 0.22;
+  }
 
   // ==========================
   // 背景
@@ -576,7 +619,6 @@ function draw() {
     height
   );
 
-
   ctx.fillStyle =
     "#050505";
 
@@ -587,9 +629,8 @@ function draw() {
     height
   );
 
-
   // ==========================
-  // 輪郭を拡大して描画
+  // 描画サイズ
   // ==========================
 
   const drawWidth =
@@ -604,7 +645,6 @@ function draw() {
   const drawY =
     (height - drawHeight) / 2;
 
-
   // ==========================
   // 発光
   // ==========================
@@ -617,11 +657,11 @@ function draw() {
       "screen";
 
     ctx.globalAlpha =
-      0.25 + currentVolume * 0.5;
+      0.25 +
+      currentVolume * 0.5;
 
     ctx.filter =
       `blur(${3 + currentVolume * 18}px)`;
-
 
     ctx.drawImage(
       edgeCanvas,
@@ -631,33 +671,184 @@ function draw() {
       drawHeight
     );
 
-
     ctx.restore();
   }
 
+  // ==========================
+  // A：そのまま膨張
+  // ==========================
+
+  if (currentMode === "A") {
+
+    ctx.save();
+
+    ctx.globalAlpha = 1;
+    ctx.filter = "none";
+    ctx.globalCompositeOperation =
+      "source-over";
+
+    ctx.drawImage(
+      edgeCanvas,
+      drawX,
+      drawY,
+      drawWidth,
+      drawHeight
+    );
+
+    ctx.restore();
+
+    return;
+  }
 
   // ==========================
-  // メインの輪郭
+  // B：ギザギザ
   // ==========================
+
+  if (currentMode === "B") {
+
+    drawJagged(
+      drawX,
+      drawY,
+      drawWidth,
+      drawHeight,
+      currentVolume
+    );
+
+    return;
+  }
+
+  // ==========================
+  // C：波
+  // ==========================
+
+  if (currentMode === "C") {
+
+    drawWave(
+      drawX,
+      drawY,
+      drawWidth,
+      drawHeight,
+      currentVolume
+    );
+
+    return;
+  }
+}
+
+// ==============================
+// B：ギザギザ
+// ==============================
+
+function drawJagged(
+  x,
+  y,
+  width,
+  height,
+  volume
+) {
 
   ctx.save();
 
   ctx.globalAlpha = 1;
-
   ctx.filter = "none";
 
-  ctx.globalCompositeOperation =
-    "source-over";
-
-
+  // 一度輪郭を描く
   ctx.drawImage(
     edgeCanvas,
-    drawX,
-    drawY,
-    drawWidth,
-    drawHeight
+    x,
+    y,
+    width,
+    height
   );
 
+  // 音量に応じて横方向へ細かくずらす
+  const slices =
+    30 + Math.floor(volume * 40);
+
+  const sliceHeight =
+    height / slices;
+
+  for (let i = 0; i < slices; i++) {
+
+    const offset =
+      Math.sin(i * 7.3) *
+      volume *
+      12;
+
+    ctx.drawImage(
+      edgeCanvas,
+
+      0,
+      i * sliceHeight,
+      edgeCanvas.width,
+      sliceHeight,
+
+      x + offset,
+      y + i * sliceHeight,
+      width,
+      sliceHeight
+    );
+  }
+
+  ctx.restore();
+}
+
+
+// ==============================
+// C：波
+// ==============================
+
+function drawWave(
+  x,
+  y,
+  width,
+  height,
+  volume
+) {
+
+  ctx.save();
+
+  ctx.globalAlpha = 1;
+  ctx.filter = "none";
+
+  const slices = 80;
+
+  const sliceHeight =
+    height / slices;
+
+  const time =
+    performance.now() * 0.003;
+
+  for (let i = 0; i < slices; i++) {
+
+    const normalized =
+      i / slices;
+
+    const wave =
+      Math.sin(
+        normalized * Math.PI * 6 +
+        time
+      );
+
+    const offset =
+      wave *
+      volume *
+      20;
+
+    ctx.drawImage(
+      edgeCanvas,
+
+      0,
+      i * sliceHeight,
+      edgeCanvas.width,
+      sliceHeight,
+
+      x + offset,
+      y + i * sliceHeight,
+      width,
+      sliceHeight
+    );
+  }
 
   ctx.restore();
 }
