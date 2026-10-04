@@ -503,45 +503,27 @@ function getVolume() {
     return 0;
   }
 
-
-  const data =
-    new Uint8Array(
-      analyser.fftSize
-    );
-
-
-  analyser.getByteTimeDomainData(
-    data
+  const data = new Uint8Array(
+    analyser.frequencyBinCount
   );
 
+  analyser.getByteFrequencyData(data);
 
   let sum = 0;
 
-
-  for (
-    let i = 0;
-    i < data.length;
-    i++
-  ) {
-
-    const value =
-      (data[i] - 128) / 128;
-
-    sum += value * value;
+  for (let i = 0; i < data.length; i++) {
+    sum += data[i];
   }
 
+  const average = sum / data.length;
 
-  const rms =
-    Math.sqrt(
-      sum / data.length
-    );
-
-
-  // 見た目用に音量を強調
-  return Math.min(
+  // 小さな音も分かりやすく反応させる
+  const volume = Math.min(
     1,
-    rms * 3
+    average / 8
   );
+
+  return volume;
 }
 
 
@@ -574,8 +556,8 @@ function draw() {
 
   // なめらかにする
   currentVolume =
-    currentVolume * 0.8 +
-    volume * 0.2;
+    currentVolume * 0.5 +
+    volume * 0.5;
 
 
   // 音量に応じた拡大
