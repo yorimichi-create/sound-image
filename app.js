@@ -562,7 +562,7 @@ function draw() {
 
   // 音量に応じた拡大
   const scale =
-    1 + currentVolume * 0.08;
+    1 + currentVolume * 0.25;
 
 
   // ==========================
@@ -620,7 +620,7 @@ function draw() {
       0.25 + currentVolume * 0.5;
 
     ctx.filter =
-      `blur(${2 + currentVolume * 10}px)`;
+      `blur(${3 + currentVolume * 18}px)`;
 
 
     ctx.drawImage(
